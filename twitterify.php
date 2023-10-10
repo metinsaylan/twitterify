@@ -88,7 +88,7 @@ class stf_twitterify {
 		
 		// Include options
 		require_once("twitterify-options.php");
-		$this->options = $options;
+		$this->options = $twitterify_options;
 		$this->settings = $this->get_plugin_settings();
 		
 		add_action('admin_menu', array( &$this, 'admin_menu') );
@@ -102,7 +102,7 @@ class stf_twitterify {
 	function get_plugin_settings(){
 		$settings = get_option( $this->settings_key );		
 		
-		if(FALSE === $settings){ // Options doesn't exist, install standard settings
+		if(FALSE === $settings && isset($this->options)){ // Options doesn't exist, install standard settings
 			// Create settings array
 			$settings = array();
 			// Set default values
@@ -119,7 +119,7 @@ class stf_twitterify {
 			if( !empty( $settings['version'] ) ){ $ver = $settings['version']; } 
 			else { $ver = ''; }
 			
-			if($ver != $this->version){ // Update needed
+			if($ver != $this->version && isset($this->options)){ // Update needed
 			
 				// Add missing keys
 				foreach($this->options as $option){
@@ -147,7 +147,7 @@ class stf_twitterify {
 
 	function get_plugin_setting( $key, $default = '' ) {
 		$settings = $this->get_plugin_settings();
-		if( array_key_exists($key, $settings) ){
+		if( is_array( $settings ) && array_key_exists($key, $settings) ){
 			return $settings[$key];
 		} else {
 			return $default;
@@ -229,18 +229,22 @@ class stf_twitterify {
 	}
 
 	function twitterify_text( $text ){
+		global $twitterify;
+
 		$ret = ' ' . $text;
+
+		if( $this->get_plugin_setting('use_autolink') == 'on' ){
+			$ret = preg_replace_callback( "#(^|[\n> ])([\w]+?://[\w]+[^ \"\n\r\t<]*)#is", array( &$this, 'twitterify_url_callback' ), $ret );
 		
-		$ret = preg_replace_callback( "#(^|[\n> ])([\w]+?://[\w]+[^ \"\n\r\t<]*)#is", array( &$this, 'twitterify_url_callback' ), $ret );
+			// links starting with www and ftp
+			$ret = preg_replace_callback( "#(^|[\n> ])((www|ftp)\.[^ \"\t\n\r<]*)#is", array( &$this, 'twitterify_wwwftp_callback' ), $ret);
 		
-		// links starting with www and ftp
-		$ret = preg_replace_callback( "#(^|[\n> ])((www|ftp)\.[^ \"\t\n\r<]*)#is", array( &$this, 'twitterify_wwwftp_callback' ), $ret);
+			// Remove http://
+			$ret = preg_replace( '/(>http[s]?:\/\/)(.*?)<\/a>/i', ">$2</a>", $ret ); 
 		
-		// Remove http://
-		$ret = preg_replace( '/(>http[s]?:\/\/)(.*?)<\/a>/i', ">$2</a>", $ret ); 
-		
-		 // Remove www.
-		$ret = preg_replace( '/(>www.)(.*?)<\/a>/i', ">$2</a>", $ret );
+		 	// Remove www.
+			$ret = preg_replace( '/(>www.)(.*?)<\/a>/i', ">$2</a>", $ret );
+		}
 		
 		// Author links
 		$author_pattern = "/([\n> ])@([A-Za-z0-9_]+)/is";

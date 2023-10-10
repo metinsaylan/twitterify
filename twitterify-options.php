@@ -8,7 +8,8 @@ $hashtags_link_to_options = array(
 	'twitter' => 'Twitter'
 );
 
-$options = array(
+
+$twitterify_options = array(
 
 	array( "name" => __( "General Settings", 'twitterify' ),
 		"type" => "section"),
@@ -38,6 +39,14 @@ $options = array(
 			"desc" => __( "Choose where to link your hashtags <a href='https://wpassist.me/twitterify-options/hashtags-link-to/' class='helplink' target='_blank'>(?)</a> </span>", 'twitterify' ),
 			"std" => "",
 			"options" => $hashtags_link_to_options
+		),
+
+		array(
+			"type" => "checkbox",
+			"name" => __( 'Autolink', 'twitterify' ),
+			"id" => "use_autolink",
+			"desc" => __( "Convert urls to links <a href='https://wpassist.me/twitterify-options/use-auto-link/' class='helplink' target='_blank'>(?)</a> </span>", 'twitterify' ),
+			"std" => "off"
 		),
 
 	array( "type" => "close")
