@@ -115,21 +115,22 @@ class stf_twitterify {
 			// Save the settings
 			update_option( $this->settings_key, $settings );
 		} else { // Options exist, update if necessary
-			
+
 			if( !empty( $settings['version'] ) ){ $ver = $settings['version']; } 
 			else { $ver = ''; }
-			
-			if($ver != $this->version && isset($this->options)){ // Update needed
-			
+
+			if( $ver != $this->version && isset($this->options) ){ // Update needed
+
 				// Add missing keys
 				foreach($this->options as $option){
 					if( array_key_exists ( 'id' , $option ) && !array_key_exists ( $option['id'] ,$settings ) ){
 						$settings[ $option['id'] ] = $option['std'];
 					}
 				}
-				
+
+				$settings['version'] = $this->version;
 				update_option( $this->settings_key, $settings );
-				
+
 				return $settings; 
 			} else { 
 			
@@ -246,9 +247,11 @@ class stf_twitterify {
 			$ret = preg_replace( '/(>www.)(.*?)<\/a>/i', ">$2</a>", $ret );
 		}
 		
-		// Author links
-		$author_pattern = "/([\n> ])@([A-Za-z0-9_]+)/is";
-		$ret = preg_replace_callback ( $author_pattern, array( &$this, 'twitterify_author_callback' ), $ret );
+		if( $this->get_plugin_setting('use_mentions') == 'on' ){
+			// Author links
+			$author_pattern = "/([\n> ])@([A-Za-z0-9_]+)/is";
+			$ret = preg_replace_callback ( $author_pattern, array( &$this, 'twitterify_author_callback' ), $ret );
+		}
 
 		// Hashtags
 		$hashtag_pattern = "{([^&//])#([A-Za-z0-9_-]+)}is";
