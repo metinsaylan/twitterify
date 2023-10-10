@@ -12,6 +12,7 @@ global $twitterify;
 
 add_action( 'save_post', 'twitterify_check_post_tags' );
 function twitterify_check_post_tags( $post_id ) {
+	global $twitterify;
 	
 	if ( wp_is_post_revision( $post_id ) )
 		return;
@@ -24,7 +25,12 @@ function twitterify_check_post_tags( $post_id ) {
 		if( $found !== 0 || false !== $found ) {
 			$twitterify_tags = join( ',', $matches[2] );
 			update_post_meta( $post_id, 'twitterify_tags_cache', $twitterify_tags );
-			wp_set_post_tags( $post_id, $twitterify_tags, true );
+			if( $twitterify->get_plugin_setting('use_hashtag_tax') == 'on' ){
+				$twitterify_tags = explode( ',', $twitterify_tags );
+				wp_set_object_terms( $post_id, $twitterify_tags, 'hashtag', false );
+			} else {
+				wp_set_post_tags( $post_id, $twitterify_tags, true );
+			}
 		}
 	}
 }
@@ -48,17 +54,30 @@ class stf_twitterify {
 			$prefix = '';
 			if( strpos( $permalink, '/index.php/') !== false ){
 				$prefix = '/index.php';
-			}		
+			}
 			
-			$tag_base = get_option( 'tag_base', 'tag' );
-			if($tag_base == ''){ $tag_base = 'tag'; }
-			$this->tag_base = $prefix . "/" . $tag_base . "/";
+			if( $this->get_plugin_setting('use_hashtag_tax') == 'on' ){
+				$tag_base = 'hashtag';
+				$this->tag_base = $prefix . "/" . $tag_base . "/";
+			} else {
+				$tag_base = get_option( 'tag_base', 'tag' );
+				if($tag_base == ''){ $tag_base = 'tag'; }
+				$this->tag_base = $prefix . "/" . $tag_base . "/";
+			}
+			
 			$this->author_base = $prefix . "/author/";
 			
 		} else {
 
 			// Permalinks not enabled
 			$this->tag_base = "?tag=";
+
+			if( $this->get_plugin_setting('use_hashtag_tax') == 'on' ){
+				$this->tag_base = "?hashtag=";
+			} else {
+				$this->tag_base = "?tag=";
+			}
+
 			$this->author_base = "?author=";
 			
 		}
@@ -75,11 +94,11 @@ class stf_twitterify {
 		add_action('admin_menu', array( &$this, 'admin_menu') );
 		
 	}
-	 
+
 	function stf_twitterify(){
 		self::__construct();
 	}
-	
+
 	function get_plugin_settings(){
 		$settings = get_option( $this->settings_key );		
 		
@@ -119,13 +138,13 @@ class stf_twitterify {
 			} 
 		}		
 	}
-	
+
 	function update_plugin_setting( $key, $value ){
 		$settings = $this->get_plugin_settings();
 		$settings[$key] = $value;
 		update_option( $this->settings_key, $settings );
 	}
-	
+
 	function get_plugin_setting( $key, $default = '' ) {
 		$settings = $this->get_plugin_settings();
 		if( array_key_exists($key, $settings) ){
@@ -136,12 +155,12 @@ class stf_twitterify {
 		
 		return FALSE;
 	}
-	
+
 	function admin_menu(){
 
-		if ( @$_GET['page'] == $this->options_page ) {		
+		if ( array_key_exists( 'page', $_GET ) && $_GET['page'] == $this->options_page ) {		
 			
-			if ( @$_REQUEST['action'] && 'save' == $_REQUEST['action'] ) {
+			if ( array_key_exists( 'action', $_REQUEST ) && 'save' == $_REQUEST['action'] ) {
 			
 				// Save settings
 				// Get settings array
@@ -155,12 +174,12 @@ class stf_twitterify {
 						$settings[ $option['id'] ] = $_REQUEST[ $option['id'] ]; 
 					}
 				}
-				
+
 				// Save the settings
 				update_option( $this->settings_key, $settings );
 				header("Location: admin.php?page=" . $this->options_page . "&saved=true&message=1");
 				die;
-			} else if( @$_REQUEST['action'] && 'reset' == $_REQUEST['action'] ) {
+			} else if( array_key_exists( 'action', $_REQUEST ) && 'reset' == $_REQUEST['action'] ) {
 				// Remove settings key
 				delete_option( $this->settings_key );
 				header("Location: admin.php?page=" . $this->options_page . "&reset=true&message=2");
@@ -198,7 +217,7 @@ class stf_twitterify {
 		$content = preg_replace_callback ( "#(.*?)(\<([a-z]+)[^\>]*\>([^\<]*?)\<\/(\\3)[^\>]*\>)(.*?)#is", array( &$this, 'twitterify_filter_codes' ), $content );
 		return $content;
 	}
-	
+
 	function twitterify_filter_codes( $matches = array() ){ 
 	
 		if( $matches[3] !== 'code' && $matches[3] !== 'pre' ){
@@ -208,7 +227,7 @@ class stf_twitterify {
 		}
 		
 	}
-	
+
 	function twitterify_text( $text ){
 		$ret = ' ' . $text;
 		
@@ -243,7 +262,7 @@ class stf_twitterify {
 			return $matches[1] . '<a target="_blank" rel="nofollow" href="http://' . $matches[2] . '" >' . $matches[2] . '</a>';
 		}
 	}
-	
+
 	function twitterify_url_callback( $matches ){
 		
 		return $matches[1] . '<a target="_blank" rel="nofollow" href="' . $matches[2] . '" >' . $matches[2] . '</a>';
@@ -288,9 +307,30 @@ class stf_twitterify {
 			$hash_base = home_url( $this->tag_base );
 		}
 		
-		return $matches[1] . " <a href='" . $hash_base . "". $matches[2] ."'>" . $hash . $matches[2] . "</a>";
+		return $matches[1] . " <a href='" . $hash_base . "". $matches[2] ."/'>" . $hash . $matches[2] . "</a>";
 	}
 
 } } // stf_twitterify
 
 $twitterify = new stf_twitterify();
+
+if( $twitterify->get_plugin_setting('use_hashtag_tax') == 'on' ){
+	add_action( 'init', 'twitterify_create_hashtag_tax' );
+	function twitterify_create_hashtag_tax() {
+		global $wp_rewrite, $twitterify;
+	
+		if( taxonomy_exists('hashtag') )
+			return;
+		register_taxonomy(
+			'hashtag',
+			'post',
+			array(
+				'label' => __( 'Hashtag' ),
+				'rewrite' => array( 'slug' => 'hashtag' ),
+				'hierarchical' => false,
+			)
+		);
+	
+		$wp_rewrite->flush_rules();
+	}
+}

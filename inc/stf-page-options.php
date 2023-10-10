@@ -11,19 +11,10 @@
 <?php } ?>
 <!-- [End] Notifications -->
 
-	<div class="wpa-banner clearfix">
-	<a class="wpa-btn" href="https://wpassist.me/?utm_source=plugin&utm_medium=referral&utm_campaign=twitterify">WP Assist</a>
-		Instant WordPress Support - Performance, SEO, Custom Plugins &amp; Themes 
-		
-	</div>
-	
-
-
 <div class="stf_opts_wrap">
 <div class="stf_options">
 <form method="post">
 <div id="options-tabs">
- 
 
 <div class="tab_container">
 <?php foreach ($options as $field) {
@@ -34,16 +25,16 @@ case 'section':
 	echo '<h3>' . $field[ 'name' ] . '</h3>'; 
 
 break;
- 
+
 	case 'open': ?>
- 
+
 <?php break;
 	
 	case 'close': ?>
 
 </div>
 </div>
- 
+
 <?php break;
 	
 	case 'text': ?>
@@ -91,8 +82,8 @@ case "checkbox":
 
 <div class="stf_input stf_checkbox clearfix">
 	<label for="<?php echo $field['id']; ?>"><?php echo $field['name']; ?></label>
-	
-	<input type="checkbox" name="<?php echo $field['id']; ?>" id="<?php echo $field['id']; ?>" value="on" <?php checked($current[ $field['id'] ], "on") ?> />
+
+	<input type="checkbox" name="<?php echo $field['id']; ?>" id="<?php echo $field['id']; ?>" value="on" <?php if( array_key_exists( $field['id'], $current ) ){ checked( $current[ $field['id'] ], "on" ); } ?> />
 
 	<small><?php echo $field['desc']; ?></small>
  </div>
