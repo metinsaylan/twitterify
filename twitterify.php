@@ -3,7 +3,7 @@
 Plugin Name: Twitterify
 Plugin URI: http://wpassist.me/plugins/twitterify/
 Description: Enables use of <strong>autolink</strong>, <strong>#hashtags</strong> and <strong>@author</strong> links on your posts. <strong>Links are not directed to twitter. They provide this functionality on your site.</strong>
-Version: 1.3
+Version: 1.4
 Author: WP Assist
 Author URI: http://wpassist.me/
 */
@@ -41,7 +41,7 @@ class stf_twitterify {
 
 	public function __construct(){
 
-		$this->version = "1.2";
+		$this->version = "1.4";
 		$this->settings_key = "stf_twitterify";
 		$this->options_page = "twitterify";
 	

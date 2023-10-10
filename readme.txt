@@ -2,9 +2,9 @@
 Contributors: mattsay
 Donate link: https://wpassist.me/donate
 Tags: tags, hashtag, @link, author links, autolink, auto-link, nofollow, twitter, twitter-like, filter, content, excerpt, convert, UPDATE
-Requires at least: 3.0
-Tested up to: 5.1.1
-Stable tag: 1.3
+Requires at least: 6.0
+Tested up to: 6.3.1
+Stable tag: 1.4
 
 Enables use of **autolink**, **#hashtags** and **@author** links on your posts. **Links are not directed to twitter. They provide this functionality on your site.**
 
@@ -30,20 +30,8 @@ You can ask your questions [here](http://wpassist.me/plugins/twitterify/)
 
 == Changelog ==
 
-= 1.2.1 = 
-* Added support for auto tagging posts using hashtags.
-
-= 1.2 =
-* Fixed: Options page error.
-
-= 1.2beta =
-* Added: Option to remove hash infront of tags.
-* Added: Option to link hashtags to either search, tag page or twitter search.
-* Fixed: Autolink & hashtags in pre
-* Added: Options page.
-
-= 1.1 =
-* Fixed the code to autolink links with a space infront of them. This will prevent linking href attributes in the code.
-
-= 1.0 =
-* First release.
+= 1.4 = 
+* Added option for custom hashtag taxonomy
+* Added option for autolink
+* Added option for mentions
+* Update tested up to
